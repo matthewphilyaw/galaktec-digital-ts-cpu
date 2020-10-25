@@ -1,52 +1,36 @@
+import { AddressMappedDevice } from './address-mapped-device';
+
 export enum BusWidth {
   Byte,
   HalfWord,
   Word,
 }
 
-interface BusValue {
-  width: BusWidth;
-  value: number;
+export class BusValue {
+  readonly width: BusWidth;
+  readonly value: number;
+
+  constructor(width: BusWidth, value: number) {
+    this.value = value;
+    this.width = width;
+  }
+
+  static word(value: number): BusValue {
+    return new BusValue(BusWidth.Word, value);
+  }
+
+  static halfWord(value: number): BusValue {
+    return new BusValue(BusWidth.HalfWord, value);
+  }
+
+  static byte(value: number): BusValue {
+    return new BusValue(BusWidth.HalfWord, value);
+  }
 }
 
 export interface BusDevice {
   write(address: BusValue, data: BusValue): Promise<void>;
   read(address: BusValue): Promise<BusValue>;
-}
-
-export class AddressMappedDevice implements BusDevice {
-  private readonly startAddress: number;
-  private readonly endAddress: number;
-
-  private readonly busDevice: BusDevice;
-
-  constructor(startAddress: number, range: number, busDevice: BusDevice) {
-    this.startAddress = startAddress;
-    this.endAddress = startAddress + range;
-
-    this.busDevice = busDevice;
-  }
-
-  private relativeAddress(address: BusValue): BusValue {
-    return {
-      width: address.width,
-      value: address.value - this.startAddress,
-    };
-  }
-
-  read(address: BusValue): Promise<BusValue> {
-    return this.busDevice.read(this.relativeAddress(address));
-  }
-
-  write(address: BusValue, data: BusValue): Promise<void> {
-    return this.busDevice.write(this.relativeAddress(address), data);
-  }
-
-  addressInRange(address: BusValue): boolean {
-    return (
-      this.startAddress <= address.value && address.value < this.endAddress
-    );
-  }
 }
 
 export class Bus implements BusDevice {
@@ -57,12 +41,12 @@ export class Bus implements BusDevice {
     this.devices = devices;
   }
 
-  acquireBus<T>(
+  private acquireBus<T>(
     address: BusValue,
     operation: (device: AddressMappedDevice) => Promise<T>,
   ): Promise<T> {
     if (this.busy) {
-      return Promise.reject('Busy busy');
+      return Promise.reject('Bus busy');
     }
 
     const device = this.devices.find((p) => p.addressInRange(address));
