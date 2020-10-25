@@ -15,7 +15,7 @@ describe('Acquire bus validation', () => {
   });
 
   test('Bus locks for write', () => {
-    device.write.mockReturnValue(new Promise(() => {}));
+    device.write.mockResolvedValue();
 
     bus.write(BusValue.word(0), BusValue.word(0));
     expect(device.write).toHaveBeenCalledWith(
@@ -28,13 +28,67 @@ describe('Acquire bus validation', () => {
   });
 
   test('Bus locks for read', () => {
-    device.read.mockReturnValue(new Promise(() => {}));
+    device.read.mockResolvedValue(BusValue.word(0));
 
     bus.read(BusValue.word(0));
     expect(device.read).toHaveBeenCalledWith(BusValue.word(0));
 
     let readAttempt = bus.read(BusValue.word(0));
     expect(readAttempt).rejects.toEqual('Bus busy');
+  });
+
+  test('Bus is released when read resolves', async () => {
+    device.read.mockResolvedValueOnce(BusValue.word(0));
+
+    await bus.read(BusValue.word(0));
+    expect(device.read).toHaveBeenCalledWith(BusValue.word(0));
+
+    device.read.mockResolvedValueOnce(BusValue.word(1));
+    let readAttempt = bus.read(BusValue.word(0));
+    expect(readAttempt).resolves.toEqual(BusValue.word(1));
+  });
+
+  test('Bus is released when read rejects', async () => {
+    device.read.mockRejectedValue('');
+
+    try {
+      await bus.read(BusValue.word(0));
+    } catch {}
+
+    expect(device.read).toHaveBeenCalledWith(BusValue.word(0));
+    device.read.mockResolvedValueOnce(BusValue.word(1));
+
+    let readAttempt = bus.read(BusValue.word(0));
+    expect(readAttempt).resolves.toEqual(BusValue.word(1));
+  });
+
+  test('Bus is released when write resolves', async () => {
+    device.write.mockResolvedValue();
+
+    await bus.write(BusValue.word(0), BusValue.word(0));
+    expect(device.write).toHaveBeenCalledWith(
+      BusValue.word(0),
+      BusValue.word(0),
+    );
+
+    let attempt = bus.write(BusValue.word(0), BusValue.word(0));
+    expect(attempt).resolves.toBe(undefined);
+  });
+
+  test('Bus is released when write resolves', async () => {
+    device.write.mockRejectedValueOnce('');
+
+    try {
+      await bus.write(BusValue.word(0), BusValue.word(0));
+    } catch {}
+
+    device.write.mockResolvedValueOnce();
+    expect(device.write).toHaveBeenCalledWith(
+      BusValue.word(0),
+      BusValue.word(0),
+    );
+    let attempt = bus.write(BusValue.word(0), BusValue.word(0));
+    expect(attempt).resolves.toBe(undefined);
   });
 });
 
