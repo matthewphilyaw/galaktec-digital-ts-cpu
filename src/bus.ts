@@ -30,7 +30,7 @@ export class BusValue {
 
 export interface BusDevice {
   write(address: BusValue, data: BusValue): Promise<void>;
-  read(address: BusValue): Promise<BusValue>;
+  read(address: BusValue, dataWidth: BusWidth): Promise<BusValue>;
 }
 
 export class Bus implements BusDevice {
@@ -58,9 +58,9 @@ export class Bus implements BusDevice {
     return operation(device).finally(() => (this.busy = false));
   }
 
-  read(address: BusValue): Promise<BusValue> {
+  read(address: BusValue, dataWidth: BusWidth): Promise<BusValue> {
     return this.acquireBus(address, (device) => {
-      return device.read(address);
+      return device.read(address, dataWidth);
     });
   }
 

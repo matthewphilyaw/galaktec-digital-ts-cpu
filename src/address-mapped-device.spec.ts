@@ -1,5 +1,5 @@
 import { mock, MockProxy } from 'jest-mock-extended';
-import { BusDevice, BusValue } from './bus';
+import { BusDevice, BusValue, BusWidth } from './bus';
 import { AddressMappedDevice } from './address-mapped-device';
 
 describe('Relative addressing', function () {
@@ -20,8 +20,8 @@ describe('Relative addressing', function () {
   });
 
   test('read called with relative address', () => {
-    addrMappedDevice.read(BusValue.word(1025));
-    expect(device.read).toHaveBeenCalledWith(BusValue.word(1));
+    addrMappedDevice.read(BusValue.word(1025), BusWidth.Word);
+    expect(device.read).toHaveBeenCalledWith(BusValue.word(1), BusWidth.Word);
   });
 });
 
@@ -55,7 +55,7 @@ describe('Address validation', () => {
     device.read.mockResolvedValue(Promise.resolve(BusValue.word(0)));
 
     await expect(
-      addrMappedDevice.read(BusValue.word(startAddr + range)),
+      addrMappedDevice.read(BusValue.word(startAddr + range), BusWidth.Word),
     ).rejects.toEqual('Address not within range of this device');
   });
 

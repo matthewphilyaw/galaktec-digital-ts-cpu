@@ -11,12 +11,6 @@
     "strictNullChecks": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "baseUrl": ".",
-    "paths": {
-      "@/*": [
-        "src/**/*.ts"
-      ]
-    },
     "outDir": "lib"
   },
   "exclude": [

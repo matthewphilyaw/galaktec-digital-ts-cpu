@@ -1,4 +1,4 @@
-import { BusDevice, BusValue } from './bus';
+import { BusDevice, BusValue, BusWidth } from './bus';
 
 export class AddressMappedDevice implements BusDevice {
   private readonly startAddress: number;
@@ -26,9 +26,9 @@ export class AddressMappedDevice implements BusDevice {
     );
   }
 
-  read(address: BusValue): Promise<BusValue> {
+  read(address: BusValue, dataWidth: BusWidth): Promise<BusValue> {
     return this.withRelativeAddress(address, (relativeAddress) =>
-      this.busDevice.read(relativeAddress),
+      this.busDevice.read(relativeAddress, dataWidth),
     );
   }
 

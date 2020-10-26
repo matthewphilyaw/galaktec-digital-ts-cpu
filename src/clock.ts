@@ -7,7 +7,7 @@ export class Clock {
     this.devices = devices;
   }
 
-  tick() {
+  tick(): void {
     for (const dev of this.devices as Activate[]) {
       dev.activate();
     }

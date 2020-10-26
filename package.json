@@ -12,7 +12,8 @@
     "clean": "./node_modules/.bin/shx rm -rf ./lib",
     "build": "npm run clean && npm run compile",
     "compile": "./node_modules/.bin/tsc --project ./tsconfig.json",
-    "fmt": "./node_modules/.bin/prettier --config .prettierrc src/**/*.ts --write"
+    "fmt": "./node_modules/.bin/prettier --config .prettierrc src/**/*.ts --write",
+    "lint": "./node_modules/.bin/eslint src/**/*.ts"
   },
   "repository": {
     "type": "git",

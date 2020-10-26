@@ -1,6 +1,6 @@
 import { mock, MockProxy } from 'jest-mock-extended';
 import { AddressMappedDevice } from './address-mapped-device';
-import { Bus, BusDevice, BusValue } from './bus';
+import { Bus, BusDevice, BusValue, BusWidth } from './bus';
 
 describe('Acquire bus validation', () => {
   let device: MockProxy<BusDevice> & BusDevice;
@@ -30,21 +30,21 @@ describe('Acquire bus validation', () => {
   test('Bus locks for read', () => {
     device.read.mockResolvedValue(BusValue.word(0));
 
-    bus.read(BusValue.word(0));
-    expect(device.read).toHaveBeenCalledWith(BusValue.word(0));
+    bus.read(BusValue.word(0), BusWidth.Word);
+    expect(device.read).toHaveBeenCalledWith(BusValue.word(0), BusWidth.Word);
 
-    let readAttempt = bus.read(BusValue.word(0));
+    let readAttempt = bus.read(BusValue.word(0), BusWidth.Word);
     expect(readAttempt).rejects.toEqual('Bus busy');
   });
 
   test('Bus is released when read resolves', async () => {
     device.read.mockResolvedValueOnce(BusValue.word(0));
 
-    await bus.read(BusValue.word(0));
-    expect(device.read).toHaveBeenCalledWith(BusValue.word(0));
+    await bus.read(BusValue.word(0), BusWidth.Word);
+    expect(device.read).toHaveBeenCalledWith(BusValue.word(0), BusWidth.Word);
 
     device.read.mockResolvedValueOnce(BusValue.word(1));
-    let readAttempt = bus.read(BusValue.word(0));
+    let readAttempt = bus.read(BusValue.word(0), BusWidth.Word);
     expect(readAttempt).resolves.toEqual(BusValue.word(1));
   });
 
@@ -52,13 +52,13 @@ describe('Acquire bus validation', () => {
     device.read.mockRejectedValue('');
 
     try {
-      await bus.read(BusValue.word(0));
+      await bus.read(BusValue.word(0), BusWidth.Word);
     } catch {}
 
-    expect(device.read).toHaveBeenCalledWith(BusValue.word(0));
+    expect(device.read).toHaveBeenCalledWith(BusValue.word(0), BusWidth.Word);
     device.read.mockResolvedValueOnce(BusValue.word(1));
 
-    let readAttempt = bus.read(BusValue.word(0));
+    let readAttempt = bus.read(BusValue.word(0), BusWidth.Word);
     expect(readAttempt).resolves.toEqual(BusValue.word(1));
   });
 
@@ -133,7 +133,7 @@ describe('Multiple devices on a bus', () => {
   });
 
   test('No device at address rejects promise for read', () => {
-    const result = bus.read(BusValue.word(100));
+    const result = bus.read(BusValue.word(100), BusWidth.Word);
     expect(result).rejects.toEqual('No device at address');
   });
 
@@ -163,7 +163,7 @@ describe('Multiple devices on a bus', () => {
       i < deviceAStartAddress + deviceARange;
       i++
     ) {
-      await bus.read(BusValue.word(i));
+      await bus.read(BusValue.word(i), BusWidth.Word);
 
       expect(deviceA.read).toHaveBeenCalled();
       expect(deviceA.write).toBeCalledTimes(0);
@@ -191,7 +191,7 @@ describe('Multiple devices on a bus', () => {
     for (let i = emptyStartAddress; i < emptyStartAddress + emptyRange; i++) {
       let error: string = '';
       try {
-        await bus.read(BusValue.word(i));
+        await bus.read(BusValue.word(i), BusWidth.Word);
       } catch (e) {
         error = e;
       }
