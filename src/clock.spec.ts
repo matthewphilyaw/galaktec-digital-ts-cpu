@@ -1,7 +1,7 @@
-import { DiscreteDevice } from './device';
+import { Discrete } from './discrete-unit';
 import { Clock } from './clock';
 
-class DeviceTester implements DiscreteDevice {
+class DeviceTester implements Discrete {
   activated: boolean;
   settled: boolean;
   deactivated: boolean;
@@ -14,7 +14,7 @@ class DeviceTester implements DiscreteDevice {
     this.deactivated = true;
   }
 
-  settle(): void {
+  processEvents(): void {
     this.settled = true;
   }
 }

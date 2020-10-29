@@ -1,22 +1,22 @@
-import { DiscreteDevice, Activate, Settle, Deactivate } from './device';
+import { Discrete } from './discrete-unit';
 
 export class Clock {
-  devices: DiscreteDevice[];
+  devices: Discrete[];
 
-  constructor(devices: DiscreteDevice[]) {
+  constructor(devices: Discrete[]) {
     this.devices = devices;
   }
 
   tick(): void {
-    for (const dev of this.devices as Activate[]) {
+    for (const dev of this.devices) {
       dev.activate();
     }
 
-    for (const dev of this.devices as Settle[]) {
-      dev.settle();
+    for (const dev of this.devices) {
+      dev.processEvents();
     }
 
-    for (const dev of this.devices as Deactivate[]) {
+    for (const dev of this.devices) {
       dev.deactivate();
     }
   }
